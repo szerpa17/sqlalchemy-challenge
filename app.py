@@ -69,18 +69,56 @@ def precipitation():
     jsonified_precip = jsonify(precip)
 
     session.close
-    
+
     return (
         
         jsonified_precip
  
     )
 
+@app.route("/api/v1.0/stations")
+def stations():
 
+session.close
 
+    return (
+        
+        jsonified_stations
+ 
+    )
 
+@app.route("/api/v1.0/tobs")
+def tobs():
 
+session.close
 
+    return (
+        
+        jsonified_tobs
+ 
+    )
+
+@app.route("/api/v1.0/<start>")
+def start_date_data():
+
+session.close
+
+    return (
+        
+        jsonified_start_date_data
+ 
+    )
+
+@app.route("/api/v1.0/<start>/<end>")
+def start_and_end_date_data():
+
+session.close
+
+    return (
+        
+        jsonified_start_and_end_date_data
+ 
+    )
 
 
 
