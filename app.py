@@ -114,19 +114,50 @@ def tobs():
     )
 
 @app.route("/api/v1.0/<start>")
-def start_date_data():
+def start_date_data(start):
+    """Fetch minimum temperature, the average temperature, 
+    and the max temperature for a given date, 
+    or a 404 if not."""
+
     session = Session(engine)
+    dates = session.query(func.min(measurement.date),func.max(measurement.date)).all()[0]
+    sel = [measurement.date, func.min(measurement.tobs), func.avg(measurement.tobs), func.max(measurement.tobs)]
+    single_date_data_return = (session.query(*sel).filter(func.strftime("%Y-%m-%d", measurement.date) == start).all())
+
+    station_temp_dict = {}
+    date_list = []
+
+    for row in single_date_data_return:
+        if row[0] == None:
+            date_list.append(start)
+            null_vals = jsonify({"error class": 404, 
+                                    "error": f"Date input {start} is not available in the database.",
+                                    "recommendations": {"format": "Correct query format is YYYY-MM-dd", 
+                                                    "range": f"The database dates range between {dates[0]} and {dates[1]}"}})
+            return null_vals
+        else:
+            station_temp_dict[row[0]] =  {'min temp':row[1], 'avg temp': row[2], 'max temp':row[3]}
+            
+
+    jsonified_single_date_data_return = jsonify(station_temp_dict)
 
     session.close
 
-    return (
-        
-        jsonified_start_date_data
- 
-    )
+    return (jsonified_single_date_data_return)
+
+    # except TypeError:
+    #     type_error = jsonify({"error class": 404, "error": f"Date input {start} is not in correct format (YYYY-MM-dd)."})
+    #     return type_error
+
+    # except:
+    #     return {jsonify({"error": f"Date input {start} has no data available"}), 404}
 
 @app.route("/api/v1.0/<start>/<end>")
 def start_and_end_date_data():
+    """Fetch minimum temperature, the average temperature, 
+    and the max temperature for a given start-end range, 
+    or a 404 if not."""
+
     session = Session(engine)
 
     session.close
