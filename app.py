@@ -120,14 +120,18 @@ def start_date_data(start):
     or a 404 if not."""
 
     session = Session(engine)
+    # Identify min and max dates in database
     dates = session.query(func.min(measurement.date),func.max(measurement.date)).all()[0]
+    # Function to populate temp observation min, max, avg and max values
     sel = [measurement.date, func.min(measurement.tobs), func.avg(measurement.tobs), func.max(measurement.tobs)]
-    single_date_data_return = (session.query(*sel).filter(func.strftime("%Y-%m-%d", measurement.date) == start).all())
+    single_date_return = (session.query(*sel).filter(func.strftime("%Y-%m-%d", measurement.date) == start).all())
 
     station_temp_dict = {}
     date_list = []
 
-    for row in single_date_data_return:
+    # Looped through results to identify if null date was pulled
+    for row in single_date_return:
+    # If date is null, return 404 error with recommendations
         if row[0] == None:
             date_list.append(start)
             null_vals = jsonify({"error class": 404, 
@@ -135,22 +139,16 @@ def start_date_data(start):
                                     "recommendations": {"format": "Correct query format is YYYY-MM-dd", 
                                                     "range": f"The database dates range between {dates[0]} and {dates[1]}"}})
             return null_vals
+    # If date is not null, input information into a dictionary
         else:
             station_temp_dict[row[0]] =  {'min temp':row[1], 'avg temp': row[2], 'max temp':row[3]}
-            
-
-    jsonified_single_date_data_return = jsonify(station_temp_dict)
-
+    
+    # Jsonify result
+    jsonified_single_date_return = jsonify(station_temp_dict)
     session.close
-
-    return (jsonified_single_date_data_return)
-
-    # except TypeError:
-    #     type_error = jsonify({"error class": 404, "error": f"Date input {start} is not in correct format (YYYY-MM-dd)."})
-    #     return type_error
-
-    # except:
-    #     return {jsonify({"error": f"Date input {start} has no data available"}), 404}
+    
+    # Return jsonified dictionary
+    return (jsonified_single_date_return)
 
 @app.route("/api/v1.0/<start>/<end>")
 def start_and_end_date_data():
