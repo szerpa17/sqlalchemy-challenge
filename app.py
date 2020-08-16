@@ -22,7 +22,7 @@ Base = automap_base()
 Base.prepare(engine, reflect=True)
 measurement =  Base.classes.measurement
 station = Base.classes.station
-session = Session(engine)
+
 
 #################################################
 # Flask Setup
@@ -37,7 +37,7 @@ app = Flask(__name__)
 @app.route("/")
 def HomePage():
     """Home Page"""
-    session.close
+    # session.close
     return ("Welcome to Hawaii Climate Analysis API <br/>"
             "Available Routes:<br/>"
             "Precipitation: /api/v1.0/precipitation <br/>"
@@ -48,7 +48,7 @@ def HomePage():
 
 @app.route("/api/v1.0/precipitation")
 def precipitation():
-    
+    session = Session(engine)
     last_date = session.query(func.max(measurement.date)).all()[0][0]
     #print(f'The max date in the dataset is: {last_date}, its type is {type(last_date)} \n')
 
@@ -78,8 +78,13 @@ def precipitation():
 
 @app.route("/api/v1.0/stations")
 def stations():
+    session = Session(engine)
+    station_list = (session.query(station.name, station.station).
+                group_by(station.name).
+                all())
 
-session.close
+    jsonified_stations = jsonify(station_list) 
+    session.close
 
     return (
         
@@ -89,8 +94,9 @@ session.close
 
 @app.route("/api/v1.0/tobs")
 def tobs():
+    session = Session(engine)
 
-session.close
+    session.close
 
     return (
         
@@ -100,8 +106,9 @@ session.close
 
 @app.route("/api/v1.0/<start>")
 def start_date_data():
+    session = Session(engine)
 
-session.close
+    session.close
 
     return (
         
@@ -111,8 +118,9 @@ session.close
 
 @app.route("/api/v1.0/<start>/<end>")
 def start_and_end_date_data():
+    session = Session(engine)
 
-session.close
+    session.close
 
     return (
         
