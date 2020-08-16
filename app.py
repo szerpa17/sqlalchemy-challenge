@@ -127,17 +127,16 @@ def start_date_data(start):
     single_date_return = (session.query(*sel).filter(func.strftime("%Y-%m-%d", measurement.date) == start).all())
 
     station_temp_dict = {}
-    date_list = []
 
     # Looped through results to identify if null date was pulled
     for row in single_date_return:
     # If date is null, return 404 error with recommendations
         if row[0] == None:
-            date_list.append(start)
             null_vals = jsonify({"error class": 404, 
-                                    "error": f"Date input {start} is not available in the database.",
-                                    "recommendations": {"format": "Correct query format is YYYY-MM-dd", 
-                                                    "range": f"The database dates range between {dates[0]} and {dates[1]}"}})
+                                 "error": f"Date input {start} is not available in the database.",
+                                 "guidelines": {"format": "Correct query format is YYYY-MM-dd", 
+                                                "range": f"Dates should range between {dates[0]} and {dates[1]}"},
+                                 "missing dates": "If requested input meets guidelines, it is possible there was no data collected for the inputted day"})
             return null_vals
     # If date is not null, input information into a dictionary
         else:
@@ -151,20 +150,44 @@ def start_date_data(start):
     return (jsonified_single_date_return)
 
 @app.route("/api/v1.0/<start>/<end>")
-def start_and_end_date_data():
+def start_and_end_date_data(start, end):
     """Fetch minimum temperature, the average temperature, 
     and the max temperature for a given start-end range, 
     or a 404 if not."""
 
-    session = Session(engine)
+    # session = Session(engine)
+    # # Identify min and max dates in database
+    # dates = session.query(func.min(measurement.date),func.max(measurement.date)).all()[0]
+    # # Function to populate temp observation min, max, avg and max values
+    # date_list = [] 
 
-    session.close
+    
+    # sel = [measurement.date, func.min(measurement.tobs), func.avg(measurement.tobs), func.max(measurement.tobs)]
+    # single_date_return = (session.query(*sel).filter(func.strftime("%Y-%m-%d", measurement.date) == start).all())
 
-    return (
-        
-        jsonified_start_and_end_date_data
- 
-    )
+    # station_temp_dict = {}
+    
+
+    # # Looped through results to identify if null date was pulled
+    # for row in single_date_return:
+    # # If date is null, return 404 error with recommendations
+    #     if row[0] == None:
+    #         date_list.append(start)
+    #         null_vals = jsonify({"error class": 404, 
+    #                                 "error": f"Date input {start} is not available in the database.",
+    #                                 "recommendations": {"format": "Correct query format is YYYY-MM-dd", 
+    #                                                 "range": f"The database dates range between {dates[0]} and {dates[1]}"}})
+    #         return null_vals
+    # # If date is not null, input information into a dictionary
+    #     else:
+    #         station_temp_dict[row[0]] =  {'min temp':row[1], 'avg temp': row[2], 'max temp':row[3]}
+    
+    # # Jsonify result
+    # jsonified_single_date_return = jsonify(station_temp_dict)
+    # session.close
+    
+    # # Return jsonified dictionary
+    # return (jsonified_single_date_return)
 
 
 
