@@ -100,6 +100,7 @@ def tobs():
 
     station_temp_results = (session.query(measurement.station, measurement.date, measurement.tobs).
                     filter(station.station == 'USC00519281').
+                    filter(measurement.tobs != None).
                     all())
     station_temp_dict = {date: tobs for station, date, tobs in station_temp_results}
     jsonified_tobs = jsonify(station_temp_dict) 
