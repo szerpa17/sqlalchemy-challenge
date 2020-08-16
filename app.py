@@ -83,10 +83,9 @@ def stations():
                 group_by(station.name).
                 all())
     
-    # station_dict = {}
-    # precip = {date: prcp for date, prcp in results}
     station_dict = {station_id: name for name, station_id in station_results}
     jsonified_stations = jsonify(station_dict ) 
+    
     session.close
 
     return (
@@ -98,6 +97,12 @@ def stations():
 @app.route("/api/v1.0/tobs")
 def tobs():
     session = Session(engine)
+
+    station_temp_results = (session.query(measurement.station, measurement.date, measurement.tobs).
+                    filter(station.station == 'USC00519281').
+                    all())
+    station_temp_dict = {date: tobs for station, date, tobs in station_temp_results}
+    jsonified_tobs = jsonify(station_temp_dict) 
 
     session.close
 
