@@ -79,11 +79,14 @@ def precipitation():
 @app.route("/api/v1.0/stations")
 def stations():
     session = Session(engine)
-    station_list = (session.query(station.name, station.station).
+    station_results = (session.query(station.name, station.station).
                 group_by(station.name).
                 all())
-
-    jsonified_stations = jsonify(station_list) 
+    
+    # station_dict = {}
+    # precip = {date: prcp for date, prcp in results}
+    station_dict = {station_id: name for name, station_id in station_results}
+    jsonified_stations = jsonify(station_dict ) 
     session.close
 
     return (
