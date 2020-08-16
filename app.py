@@ -1,11 +1,21 @@
+# Dependencies
 from flask import Flask, jsonify
-import datetime as dt
+from matplotlib import style
+style.use('fivethirtyeight')
+
 import numpy as np
+import pandas as pd
+import datetime as dt
+from scipy import stats
+
 import sqlalchemy
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
-from sqlalchemy import create_engine, func
+from sqlalchemy import create_engine, func, inspect
+from sqlalchemy.sql import label
 
+
+# Create Engine
 engine = create_engine('sqlite:///Resources/hawaii.sqlite')
 connection = engine.connect()
 Base = automap_base()
