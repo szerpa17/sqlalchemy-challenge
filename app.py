@@ -24,17 +24,6 @@ measurement =  Base.classes.measurement
 station = Base.classes.station
 session = Session(engine)
 
-# can also specify config in flask
-
-# generates the engine to the correct sqlite file
-# Uses automap_base() and reflects the database schema
-# Correctly saves references to the tables in the sqlite file
-# (measurement and station)
-# creates and binds  the session between the python  app and database
-
-# measurement_table = session.query(measurement).all()
-# station_table = session.query(station).all()
-
 #################################################
 # Flask Setup
 #################################################
@@ -60,29 +49,38 @@ def HomePage():
 @app.route("/api/v1.0/precipitation")
 def precipitation():
     
-    lastDate = session.query(func.max(measurement.date)).all()[0][0]
-    dt_max_date = dt.datetime.strptime(lastDate, '%Y-%m-%d')
-    # print(f'Max Date: {dt_max_date}' )
+    last_date = session.query(func.max(measurement.date)).all()[0][0]
+    #print(f'The max date in the dataset is: {last_date}, its type is {type(last_date)} \n')
+
+    # Convert date to datetime format
+    dt_max_date = dt.datetime.strptime(last_date, '%Y-%m-%d')
 
     # Calculate the date 1 year prior to last date in database
     date_year_prior = dt_max_date - dt.timedelta(days=365)
-    # print(f'Prior Date: {date_year_prior}')
+    #print(f'365 days prior to last date in dataset: {year_prior.date()} \n')
 
     # Perform a query to retrieve the data and precipitation scores
-    results = session.query(measurement.date, measurement.prcp).filter(measurement.date>=date_year_prior).all()
-    # for r in results:
-    #     print(r)
+    results = (session.query(measurement.date, measurement.prcp).
+            filter(measurement.date>=date_year_prior).
+            filter(measurement.prcp != None).
+            all())
 
     precip = {date: prcp for date, prcp in results}
-    jsonified = jsonify(precip)
+    jsonified_precip = jsonify(precip)
 
     session.close
     
     return (
         
-        jsonified
+        jsonified_precip
  
     )
+
+
+
+
+
+
 
 
 
