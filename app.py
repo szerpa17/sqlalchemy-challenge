@@ -178,7 +178,7 @@ def start_and_end_date_data(start, end):
     # Verify if user input dates fall within data range
     if start < dates[0] or end > dates[1]:
         date_range_error = jsonify({"error class": 404, 
-                            "error": f'Date input "{start}"/"{end}"" is not available in the database range',
+                            "error": f'Date input {start}/{end} is not available in the database range',
                             "range": f"Dates should range between {dates[0]} and {dates[1]}"})
         return date_range_error, 404
 
