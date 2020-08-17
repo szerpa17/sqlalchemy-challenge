@@ -155,41 +155,57 @@ def start_and_end_date_data(start, end):
     and the max temperature for a given start-end range, 
     or a 404 if not."""
 
-    # session = Session(engine)
-    # # Identify min and max dates in database
-    # dates = session.query(func.min(measurement.date),func.max(measurement.date)).all()[0]
-    # # Function to populate temp observation min, max, avg and max values
-    # date_list = [] 
+    session = Session(engine)
+    # Identify min and max dates in database
+    dates = session.query(func.min(measurement.date),func.max(measurement.date)).all()[0]
+    date_list = [] 
 
-    
-    # sel = [measurement.date, func.min(measurement.tobs), func.avg(measurement.tobs), func.max(measurement.tobs)]
-    # single_date_return = (session.query(*sel).filter(func.strftime("%Y-%m-%d", measurement.date) == start).all())
+    try: 
+    # Verify if input can be converted to datetime
+        start_date = dt.datetime.strptime(start, "%Y-%m-%d")
+        end_date = dt.datetime.strptime(end, "%Y-%m-%d")
+    except (TypeError, ValueError):
+        session.close
+        format_error = jsonify({"error class": 404, 
+                            "error": f"Date input {start}/{end} is not readable.",
+                            "recommendation": {"format": 'Correct query format is "YYYY-MM-dd"/"YYYY-MM-dd"'}})
+        return format_error
 
-    # station_temp_dict = {}
-    
+    # Verify if user input dates fall within data range
+    if start < dates[0] or end > dates[1]:
+        date_range_error = jsonify({"error class": 404, 
+                            "error": f'Date input "{start}"/"{end}"" is not available in the database range',
+                            "range": f"Dates should range between {dates[0]} and {dates[1]}"})
+        return date_range_error 
+    else:
+        delta = end_date - start_date
 
-    # # Looped through results to identify if null date was pulled
-    # for row in single_date_return:
-    # # If date is null, return 404 error with recommendations
-    #     if row[0] == None:
-    #         date_list.append(start)
-    #         null_vals = jsonify({"error class": 404, 
-    #                                 "error": f"Date input {start} is not available in the database.",
-    #                                 "recommendations": {"format": "Correct query format is YYYY-MM-dd", 
-    #                                                 "range": f"The database dates range between {dates[0]} and {dates[1]}"}})
-    #         return null_vals
-    # # If date is not null, input information into a dictionary
-    #     else:
-    #         station_temp_dict[row[0]] =  {'min temp':row[1], 'avg temp': row[2], 'max temp':row[3]}
-    
-    # # Jsonify result
-    # jsonified_single_date_return = jsonify(station_temp_dict)
-    # session.close
-    
-    # # Return jsonified dictionary
-    # return (jsonified_single_date_return)
+        # Use the start and end date to create a range of dates
+        for i in range(delta.days + 1):
+            date = (start_date + dt.timedelta(i))
+        # Convert back to string
+            date = date.strftime('%Y-%m-%d')
+        # Save to date list
+            date_list.append(date) 
+            
+        # Function to populate temp observation min, max, avg and max values
+        sel = [measurement.date, func.min(measurement.tobs), func.avg(measurement.tobs), func.max(measurement.tobs)]
 
+        station_temp_range_dict = {}
 
+        # For loop to query each day in the date_list
+        for day in date_list:
+            single_date_return = (session.query(*sel).filter(func.strftime("%Y-%m-%d", measurement.date) == day).all())[0]
+        # Build dictionary
+            station_temp_range_dict[single_date_return[0]] =  {'min temp':single_date_return[1], 
+                                                            'avg temp': single_date_return[2], 
+                                                            'max temp':single_date_return[3]}
+
+        # Jsonify result
+        jsonified_multi_date_return = jsonify(station_temp_range_dict)
+        
+        session.close
+        return jsonified_multi_date_return            
 
 if __name__ == "__main__":
     app.run(debug=True)
