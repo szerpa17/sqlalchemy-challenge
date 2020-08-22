@@ -1,5 +1,5 @@
 # Dependencies
-from flask import Flask, jsonify
+from flask import Flask, jsonify, render_template
 from matplotlib import style
 style.use('fivethirtyeight')
 
@@ -37,16 +37,8 @@ app = Flask(__name__)
 @app.route("/")
 def HomePage():
     """Home Page"""
-    home_page_text = ("<h2>Welcome to Hawaii Climate Analysis API</h2>"
-                    "<strong>Available Routes:</strong>"
-                    "<li>Precipitation data (all available): /api/v1.0/precipitation </li>"
-                    "<li>Stations: /api/v1.0/stations </li>"
-                    "<li>Temperature observations (for the most active station/last year available): /api/v1.0/tobs </li>"
-                    "<li>Single day - Min, Average and Max temperature observations: /api/v1.0/&#60;start&#62; </li>"
-                    "<li>Multi day - Min, Average and Max temperature observations: /api/v1.0/&#60;start&#62;/&#60;end&#62; </li>")
-
-    return home_page_text
-
+    
+    return render_template("index.html")
 
 @app.route("/api/v1.0/precipitation")
 def precipitation():
