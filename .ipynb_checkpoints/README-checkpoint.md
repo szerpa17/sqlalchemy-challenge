@@ -1,6 +1,6 @@
 # SQLAlchemy Challenge
 
-<!-- ![surfs-up.png](Images/surfs-up.png) -->
+![surfs-up.png](https://github.com/szerpa17/sqlalchemy-challenge/blob/master/images/surfs-up.png?raw=true)
 
 Challenge to analyze climate in Honolulu, Hawaii through the use of a climate database.
 
